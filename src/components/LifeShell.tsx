@@ -3,6 +3,7 @@ import { useState, type ElementType, type ReactNode } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 import { useTheme } from "../contexts/ThemeContext";
+import { logout } from "../lib/auth";
 
 type NavItem = { href: string; label: string; icon: ElementType; tone?: string };
 
@@ -55,6 +56,7 @@ export default function LifeShell({ children, title, eyebrow }: { children: Reac
   const { theme, toggleTheme } = useTheme();
   const activeHref = primaryNav.find((item) => item.href === location)?.href;
   const go = (href: string) => { navigate(href); setQuickOpen(false); };
+  const signOut = async () => { await logout(); window.location.reload(); };
 
   return <div className={`app-frame subtle-grid space-${getSpaceKey(location)}`} dir="rtl">
     <aside className="sidebar">
@@ -65,7 +67,8 @@ export default function LifeShell({ children, title, eyebrow }: { children: Reac
       <nav className="side-nav"><small className="nav-label">مساحتك الخاصة</small>{primaryNav.map((item) => <NavButton key={item.href} item={item} active={activeHref === item.href} onClick={() => go(item.href)} />)}</nav>
       <div className="nav-separator" />
       <nav className="side-nav"><small className="nav-label">اكتشف</small>{exploreNav.map((item) => <NavButton key={item.href} item={item} active={location === item.href} onClick={() => go(item.href)} />)}</nav>
-      <div className="profile-chip" onClick={() => go("/more")}><span className="avatar">هـ</span><span><strong>هير محمود</strong><small>وضع محلي مستقل</small></span><ChevronLeft size={16} /></div>
+      <div className="profile-chip" onClick={() => go("/more")}><span className="avatar">هـ</span><span><strong>هير محمود</strong><small>مساحة خاصة</small></span><ChevronLeft size={16} /></div>
+      <button className="logout-link" onClick={signOut}>تسجيل الخروج</button>
     </aside>
     <main className="main-content">
       <div className="section-art" aria-hidden="true" />

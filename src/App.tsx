@@ -1,14 +1,33 @@
+import { useEffect, useState, type ReactNode } from "react";
 import { Toaster } from "sonner";
 import { Route, Switch } from "wouter";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { getAuthState } from "./lib/auth";
+import LoginPage from "./pages/LoginPage";
 import { Assistant, Analytics, Calendar, Deutsch, Finance, Habits, Home, Memories, MobileAuth, More, NotFound, Notes, Projects, Social, Spiritual, Tasks, Vault, VoiceTask } from "./pages/Pages";
 
-function ErrorBoundary({ children }: { children: React.ReactNode }) {
+function ErrorBoundary({ children }: { children: ReactNode }) {
+  return <>{children}</>;
+}
+
+function AuthGate({ children }: { children: ReactNode }) {
+  const [ready, setReady] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
+
+  useEffect(() => {
+    getAuthState()
+      .then((state) => setAuthenticated(state.authenticated))
+      .catch(() => setAuthenticated(false))
+      .finally(() => setReady(true));
+  }, []);
+
+  if (!ready) return <main className="auth-loading" dir="rtl"><div className="auth-loading-mark">✦</div><strong>جارٍ فتح مساحتك الخاصة…</strong></main>;
+  if (!authenticated) return <LoginPage onAuthenticated={() => setAuthenticated(true)} />;
   return <>{children}</>;
 }
 
 export default function App() {
-  return <ErrorBoundary><ThemeProvider defaultTheme="dark"><Toaster richColors position="top-center" dir="rtl" /><Switch>
+  return <ErrorBoundary><ThemeProvider defaultTheme="dark"><Toaster richColors position="top-center" dir="rtl" /><AuthGate><Switch>
     <Route path="/" component={Home} />
     <Route path="/mobile-auth" component={MobileAuth} />
     <Route path="/tasks" component={Tasks} />
@@ -27,5 +46,5 @@ export default function App() {
     <Route path="/assistant" component={Assistant} />
     <Route path="/more" component={More} />
     <Route component={NotFound} />
-  </Switch></ThemeProvider></ErrorBoundary>;
+  </Switch></AuthGate></ThemeProvider></ErrorBoundary>;
 }
